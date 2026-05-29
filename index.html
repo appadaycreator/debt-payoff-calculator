@@ -105,20 +105,97 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 
         <div class="card">
-          <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">💳 借金・ローン返済シミュレーター</h2>
-          <label>ローン残高（万円）</label>
-          <input type="number" id="balance" placeholder="例: 200" min="0" step="0.1">
-          <label style="margin-top:12px;">年利（%）</label>
-          <input type="number" id="rate" placeholder="例: 3.5" min="0" step="0.01">
-          <label style="margin-top:12px;">月々の返済額（円）</label>
-          <input type="number" id="monthly" placeholder="例: 50000" min="0">
-          <label style="margin-top:12px;">繰り上げ返済額（円/月）※任意</label>
-          <input type="number" id="extra" placeholder="例: 10000" min="0">
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:4px;">💳 借金・ローン返済シミュレーター</h2>
+          <p style="font-size:12px;color:#888;margin-bottom:16px;">ローン条件を入力して完済計画を計算します</p>
+
+          <div id="dpc-warn" style="display:none;background:#fef2f2;border:1.5px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:13px;color:#b91c1c;margin-bottom:12px;"></div>
+
+          <label>ローン残高</label>
+          <div style="position:relative;">
+            <input type="number" id="balance" placeholder="例: 200" min="0" step="0.1" style="padding-right:48px;">
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#888;pointer-events:none;margin-top:2px;">万円</span>
+          </div>
+
+          <label style="margin-top:12px;">年利（借入利率）</label>
+          <div style="position:relative;">
+            <input type="number" id="rate" placeholder="例: 3.5" min="0" step="0.01" style="padding-right:28px;">
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#888;pointer-events:none;margin-top:2px;">%</span>
+          </div>
+
+          <label style="margin-top:12px;">月々の返済額</label>
+          <div style="position:relative;">
+            <input type="number" id="monthly" placeholder="例: 50000" min="0" style="padding-right:28px;">
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#888;pointer-events:none;margin-top:2px;">円</span>
+          </div>
+
+          <label style="margin-top:12px;">繰り上げ返済額（任意）</label>
+          <div style="position:relative;">
+            <input type="number" id="extra" placeholder="例: 10000" min="0" style="padding-right:52px;">
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:13px;color:#888;pointer-events:none;margin-top:2px;">円/月</span>
+          </div>
+
           <button class="btn" style="margin-top:20px;" onclick="calculate()">完済シミュレーション</button>
-          <div class="result" id="result" style="margin-top:16px;">
-            <div class="card" style="text-align:center;">
-              <div id="output" style="font-size:1.8rem;font-weight:700;color:#7c3aed;padding:12px 0;"></div>
-              <p id="detail" style="color:#666;font-size:14px;margin-top:4px;line-height:1.8;"></p>
+
+          <div class="result" id="result" style="margin-top:20px;">
+            <!-- KPIカード -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:14px;text-align:center;">
+                <div style="font-size:11px;color:#7c3aed;font-weight:700;letter-spacing:0.5px;margin-bottom:4px;">完済まで</div>
+                <div id="dpc-kpi-period" style="font-size:20px;font-weight:700;color:#4c1d95;line-height:1.2;">--</div>
+              </div>
+              <div style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:12px;padding:14px;text-align:center;">
+                <div style="font-size:11px;color:#7c3aed;font-weight:700;letter-spacing:0.5px;margin-bottom:4px;">総返済額</div>
+                <div id="dpc-kpi-total" style="font-size:17px;font-weight:700;color:#4c1d95;">--</div>
+              </div>
+              <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px;text-align:center;">
+                <div style="font-size:11px;color:#ea580c;font-weight:700;letter-spacing:0.5px;margin-bottom:4px;">総支払利息</div>
+                <div id="dpc-kpi-int" style="font-size:17px;font-weight:700;color:#7c3aed;">--</div>
+              </div>
+              <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:12px;padding:14px;text-align:center;">
+                <div style="font-size:11px;color:#ea580c;font-weight:700;letter-spacing:0.5px;margin-bottom:4px;">利息割合</div>
+                <div id="dpc-kpi-ratio" style="font-size:22px;font-weight:700;">--</div>
+              </div>
+            </div>
+
+            <!-- 残高推移グラフ -->
+            <div style="background:white;border-radius:12px;padding:14px 10px;margin-bottom:12px;border:1px solid #e5e7eb;">
+              <div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:10px;padding-left:4px;">📈 残高推移グラフ</div>
+              <canvas id="dpc-chart" style="display:block;max-width:100%;"></canvas>
+              <div id="dpc-legend" style="display:flex;gap:16px;justify-content:center;font-size:11px;color:#6b7280;margin-top:8px;flex-wrap:wrap;"></div>
+            </div>
+
+            <!-- 繰り上げ返済効果 -->
+            <div id="dpc-extra" style="display:none;background:#f0fdf4;border:1.5px solid #86efac;border-radius:12px;padding:14px;margin-bottom:12px;">
+              <p style="font-size:13px;font-weight:700;color:#166534;margin-bottom:10px;text-align:center;">✨ 繰り上げ返済シミュレーション結果</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;">
+                <div>
+                  <div style="font-size:11px;color:#166534;font-weight:600;margin-bottom:2px;">期間短縮</div>
+                  <div id="dpc-extra-months" style="font-size:18px;font-weight:700;color:#16a34a;">--</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:#166534;font-weight:600;margin-bottom:2px;">利息節約</div>
+                  <div id="dpc-extra-saved" style="font-size:18px;font-weight:700;color:#16a34a;">--</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- アドバイス -->
+            <div id="dpc-advice" style="display:none;border-radius:10px;padding:12px 14px;margin-bottom:12px;font-size:13px;line-height:1.6;"></div>
+
+            <!-- 返済スケジュール -->
+            <button id="dpc-sched-btn" data-ux="skip" onclick="toggleSchedule()" style="display:none;background:none;border:1.5px solid #7c3aed;color:#7c3aed;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-bottom:8px;min-height:44px;">▼ 返済スケジュール表を見る</button>
+            <div id="dpc-sched-wrap" style="display:none;overflow-x:auto;border-radius:8px;border:1px solid #e5e7eb;">
+              <table style="width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap;min-width:280px;">
+                <thead>
+                  <tr style="background:#7c3aed;color:white;">
+                    <th style="padding:8px 10px;text-align:left;font-weight:600;">期間</th>
+                    <th style="padding:8px 10px;text-align:right;font-weight:600;">元金（円）</th>
+                    <th style="padding:8px 10px;text-align:right;font-weight:600;">利息（円）</th>
+                    <th style="padding:8px 10px;text-align:right;font-weight:600;">残高（円）</th>
+                  </tr>
+                </thead>
+                <tbody id="dpc-sched-body"></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -190,8 +267,8 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
         </div>
     </main>
 
-    <footer style="text-align:center;padding:20px;color:white;font-size:12px;opacity:0.75;margin-top:8px;">
-        <p><a href="https://appadaycreator.github.io/" style="color:white;">AppADayCreator</a>
+    <footer style="text-align:center;padding:20px;color:white;font-size:12px;background:#374151;margin-top:8px;">
+        <p><a href="https://appadaycreator.com/" style="color:white;">AppADayCreator</a>
         | <a href="privacy-policy.html" style="color:white;">プライバシーポリシー</a>
         | <a href="terms.html" style="color:white;">利用規約</a>
         | <a href="contact.html" style="color:white;">お問い合わせ</a></p>
@@ -200,42 +277,257 @@ select,input[type=text],input[type=number],input[type=email],textarea{min-height
     </footer>
 
     <script>
-    const CFG = {
-      inputs: ['balance','rate','monthly','extra'],
-      error: 'ローン残高・年利・月返済額を入力してください',
-    };
-    function calcLogic(vals) {
-      const [balance, rate, monthly, extra] = vals;
-      const principal = balance * 10000;
-      const mr = rate / 100 / 12;
-      let rem = principal, months = 0, totalInt = 0;
-      while (rem > 0 && months < 1200) {
-        const i = rem * mr; totalInt += i; rem = rem + i - monthly; months++;
-      }
-      let extraText = '';
-      if (extra > 0) {
-        let rem2 = principal, m2 = 0, ti2 = 0;
-        while (rem2 > 0 && m2 < 1200) {
-          const i2 = rem2 * mr; ti2 += i2; rem2 = rem2 + i2 - monthly - extra; m2++;
-        }
-        const saved = Math.round(totalInt - ti2);
-        extraText = `\n繰り上げ後: ${Math.floor(m2/12)}年${m2%12}ヶ月 / 利息節約: ${saved.toLocaleString()}円`;
-      }
-      const yrs = Math.floor(months/12), mos = months%12;
-      const result = months >= 1200 ? '返済不可（月返済額が少なすぎます）' : `完済まで ${yrs}年${mos}ヶ月`;
-      const detail = `総支払利息: ${Math.round(totalInt).toLocaleString()}円${extraText}`;
-      return { result, detail };
+    // === Debt Payoff Calculator v2 ===
+    const STORAGE_KEY = 'dpc_v2';
+
+    function saveInputs() {
+      const d = {};
+      ['balance','rate','monthly','extra'].forEach(id => {
+        const el = document.getElementById(id); if (el) d[id] = el.value;
+      });
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); } catch(e) {}
     }
-    document.addEventListener('DOMContentLoaded',()=>{
-      CFG.inputs.forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('keydown',e=>{ if(e.key==='Enter') calculate(); }); });
+
+    function restoreInputs() {
+      try {
+        const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        Object.entries(d).forEach(([id, v]) => { const el = document.getElementById(id); if (el && v) el.value = v; });
+      } catch(e) {}
+    }
+
+    // 元利均等返済スケジュール生成
+    function genSchedule(principal, annualRate, monthly, extra) {
+      extra = extra || 0;
+      const mr = annualRate > 0 ? annualRate / 100 / 12 : 0;
+      const pay = monthly + extra;
+      const sched = [];
+      let rem = principal, totalInt = 0;
+      while (rem > 0.005 && sched.length < 1200) {
+        const interest = rem * mr;
+        const actualPay = Math.min(pay, rem + interest);
+        const prinPaid = Math.max(0, actualPay - interest);
+        rem = Math.max(0, rem - prinPaid);
+        totalInt += interest;
+        sched.push({ month: sched.length + 1, interest, principal: prinPaid, balance: rem });
+      }
+      return { sched, totalInt, months: sched.length };
+    }
+
+    function fmt(n) { return Math.round(n).toLocaleString(); }
+
+    function fmtAmount(n) {
+      const m = Math.round(n);
+      if (m >= 100000000) return `${(m/100000000).toFixed(1)}億円`;
+      if (m >= 10000) return `${Math.round(m/10000).toLocaleString()}万円`;
+      return `${m.toLocaleString()}円`;
+    }
+
+    // 残高推移グラフ描画（Canvas API）
+    function drawChart(sched, schedExtra) {
+      const canvas = document.getElementById('dpc-chart');
+      if (!canvas || !canvas.getContext || !sched || !sched.length) return;
+      const cont = canvas.parentElement;
+      const W = Math.max(280, cont ? cont.offsetWidth : 320);
+      const H = Math.round(W * 0.45);
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext('2d');
+      const pad = { top: 12, right: 16, bottom: 32, left: 62 };
+      const cW = W - pad.left - pad.right, cH = H - pad.top - pad.bottom;
+      const maxM = Math.max(sched.length, schedExtra ? schedExtra.length : 0);
+      const maxBal = sched[0].balance + sched[0].principal;
+
+      ctx.clearRect(0, 0, W, H);
+      ctx.font = '9px sans-serif';
+
+      // Y軸グリッド＆ラベル
+      for (let i = 0; i <= 4; i++) {
+        const y = pad.top + (cH / 4) * i;
+        ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + cW, y); ctx.stroke();
+        ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'right';
+        const val = maxBal * (1 - i / 4);
+        ctx.fillText(fmtAmount(val).replace('円',''), pad.left - 3, y + 3);
+      }
+
+      // X軸年ラベル
+      const maxYrs = Math.ceil(maxM / 12);
+      const step = maxYrs <= 5 ? 1 : maxYrs <= 15 ? 3 : maxYrs <= 30 ? 5 : 10;
+      for (let yr = 0; yr <= maxYrs; yr += step) {
+        const x = pad.left + Math.min(yr * 12 / maxM, 1) * cW;
+        ctx.fillStyle = '#9ca3af'; ctx.textAlign = 'center';
+        ctx.fillText(yr === 0 ? '開始' : `${yr}年`, x, pad.top + cH + 16);
+      }
+
+      function drawLine(s, color, dash) {
+        if (!s || !s.length) return;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, pad.top);
+        s.forEach((p, i) => {
+          const x = pad.left + ((i + 1) / maxM) * cW;
+          const y = pad.top + cH * (1 - p.balance / maxBal);
+          ctx.lineTo(x, y);
+        });
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.setLineDash(dash || []);
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+
+      // 繰り上げ線を先に描画（背面）
+      if (schedExtra) drawLine(schedExtra, '#10b981', [6, 4]);
+      drawLine(sched, '#7c3aed');
+    }
+
+    // 返済スケジュール表構築
+    function buildSchedule(sched) {
+      const tbody = document.getElementById('dpc-sched-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const total = sched.length;
+      const step = total <= 24 ? 1 : total <= 60 ? 3 : total <= 120 ? 6 : 12;
+      let rowIdx = 0;
+      sched.forEach((p, i) => {
+        if (i % step !== 0 && i !== total - 1) return;
+        const yr = Math.floor(p.month / 12), mo = p.month % 12;
+        const lbl = yr > 0 ? `${yr}年${mo > 0 ? mo + 'ヶ月' : ''}` : `${mo}ヶ月`;
+        const tr = document.createElement('tr');
+        tr.style.background = rowIdx % 2 === 0 ? '#fff' : '#f9fafb';
+        tr.innerHTML = `<td style="padding:6px 10px;color:#666;">${lbl}</td><td style="padding:6px 10px;text-align:right;">${fmt(p.principal)}</td><td style="padding:6px 10px;text-align:right;color:#ea580c;">${fmt(p.interest)}</td><td style="padding:6px 10px;text-align:right;font-weight:600;">${fmt(p.balance)}</td>`;
+        tbody.appendChild(tr);
+        rowIdx++;
+      });
+    }
+
+    function toggleSchedule() {
+      const wrap = document.getElementById('dpc-sched-wrap');
+      const btn = document.getElementById('dpc-sched-btn');
+      if (!wrap) return;
+      const show = wrap.style.display === 'none';
+      wrap.style.display = show ? 'block' : 'none';
+      if (btn) btn.textContent = show ? '▲ スケジュールを閉じる' : '▼ 返済スケジュール表を見る';
+    }
+
+    // リアルタイムバリデーション
+    function checkWarning() {
+      const balance = parseFloat(document.getElementById('balance')?.value) || 0;
+      const rate = parseFloat(document.getElementById('rate')?.value) || 0;
+      const monthly = parseFloat(document.getElementById('monthly')?.value) || 0;
+      const el = document.getElementById('dpc-warn');
+      if (!el) return;
+      if (balance > 0 && rate > 0 && monthly > 0) {
+        const minInt = balance * 10000 * rate / 100 / 12;
+        if (monthly <= minInt) {
+          el.textContent = `⚠️ 月返済額が最低利息（${Math.ceil(minInt).toLocaleString()}円）以下です。元金が増え続けて完済できません。`;
+          el.style.display = 'block'; return;
+        }
+      }
+      el.style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      restoreInputs();
+      ['balance','rate','monthly','extra'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+          el.addEventListener('blur', saveInputs);
+        }
+      });
+      ['balance','rate','monthly'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', checkWarning);
+      });
     });
-    function calculate(){
-      const vals=CFG.inputs.map(id=>parseFloat(document.getElementById(id)?.value)||0);
-      if(!vals[0]||!vals[2]){ alert(CFG.error); return; }
-      const {result,detail}=calcLogic(vals);
-      document.getElementById('output').textContent=result;
-      const d=document.getElementById('detail'); if(d) d.textContent=detail||'';
-      document.getElementById('result').classList.add('show');
+
+    function calculate() {
+      const balance = parseFloat(document.getElementById('balance')?.value) || 0;
+      const rate = parseFloat(document.getElementById('rate')?.value) || 0;
+      const monthly = parseFloat(document.getElementById('monthly')?.value) || 0;
+      const extra = parseFloat(document.getElementById('extra')?.value) || 0;
+
+      if (!balance || !monthly) { alert('ローン残高・月返済額を入力してください'); return; }
+
+      const principal = balance * 10000;
+      if (rate > 0) {
+        const minInt = principal * rate / 100 / 12;
+        if (monthly <= minInt) {
+          alert(`月返済額（${fmt(monthly)}円）が最低利息（${Math.ceil(minInt).toLocaleString()}円）以下です。返済額を増やしてください。`);
+          return;
+        }
+      }
+
+      saveInputs();
+      const { sched, totalInt, months } = genSchedule(principal, rate, monthly);
+      let schedExtra = null, totalIntExtra = 0, monthsExtra = 0;
+      if (extra > 0) {
+        const r2 = genSchedule(principal, rate, monthly, extra);
+        schedExtra = r2.sched; totalIntExtra = r2.totalInt; monthsExtra = r2.months;
+      }
+
+      // KPI更新
+      const yrs = Math.floor(months / 12), mos = months % 12;
+      const totalPay = principal + totalInt;
+      const ratio = principal > 0 ? Math.round(totalInt / principal * 100) : 0;
+
+      document.getElementById('dpc-kpi-period').textContent = months >= 1200 ? '返済不能' : `${yrs}年${mos}ヶ月`;
+      document.getElementById('dpc-kpi-total').textContent = fmtAmount(totalPay);
+      document.getElementById('dpc-kpi-int').textContent = fmtAmount(totalInt);
+      const ratioEl = document.getElementById('dpc-kpi-ratio');
+      ratioEl.textContent = `${ratio}%`;
+      ratioEl.style.color = ratio > 50 ? '#dc2626' : ratio > 25 ? '#d97706' : '#16a34a';
+      document.getElementById('dpc-kpi-int').style.color = ratio > 50 ? '#dc2626' : ratio > 25 ? '#d97706' : '#7c3aed';
+
+      // アドバイス表示
+      const advEl = document.getElementById('dpc-advice');
+      if (advEl) {
+        let msg, bg, border, color;
+        if (months >= 1200) {
+          msg = '⚠️ 完済まで100年以上かかります。月返済額を大幅に増やすことを強くお勧めします。';
+          bg='#fef2f2'; border='#fecaca'; color='#b91c1c';
+        } else if (ratio > 50) {
+          msg = `⚠️ 利息割合${ratio}%。元金より多い利息を支払います。繰り上げ返済を入力して効果を確認しましょう。`;
+          bg='#fef2f2'; border='#fecaca'; color='#b91c1c';
+        } else if (ratio > 25) {
+          msg = `💡 利息割合${ratio}%。毎月の繰り上げ返済で期間を大幅短縮できます。試してみましょう！`;
+          bg='#fffbeb'; border='#fde68a'; color='#92400e';
+        } else {
+          msg = `✅ 良好な返済計画です（利息割合${ratio}%）。このペースで着実に完済を目指しましょう！`;
+          bg='#f0fdf4'; border='#86efac'; color='#166534';
+        }
+        Object.assign(advEl.style, { background: bg, border: `1.5px solid ${border}`, color, display: 'block' });
+        advEl.textContent = msg;
+      }
+
+      // 繰り上げ効果カード
+      const extraEl = document.getElementById('dpc-extra');
+      if (extra > 0 && schedExtra && extraEl) {
+        const savedM = months - monthsExtra;
+        const savedInt = totalInt - totalIntExtra;
+        document.getElementById('dpc-extra-months').textContent =
+          `${Math.floor(savedM/12)}年${savedM%12}ヶ月短縮`;
+        document.getElementById('dpc-extra-saved').textContent = fmtAmount(savedInt) + '節約';
+        extraEl.style.display = 'block';
+        document.getElementById('dpc-legend').innerHTML =
+          `<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#7c3aed;border-radius:2px;display:inline-block;"></span>通常返済</span>` +
+          `<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:0;border-top:3px dashed #10b981;display:inline-block;"></span>繰り上げ後</span>`;
+      } else {
+        if (extraEl) extraEl.style.display = 'none';
+        document.getElementById('dpc-legend').innerHTML =
+          `<span style="display:flex;align-items:center;gap:4px;"><span style="width:16px;height:3px;background:#7c3aed;border-radius:2px;display:inline-block;"></span>残高推移</span>`;
+      }
+
+      // スケジュール表
+      buildSchedule(sched);
+      const schedBtn = document.getElementById('dpc-sched-btn');
+      if (schedBtn) schedBtn.style.display = 'block';
+      const schedWrap = document.getElementById('dpc-sched-wrap');
+      if (schedWrap) schedWrap.style.display = 'none';
+
+      // 結果表示してグラフ描画
+      const resEl = document.getElementById('result');
+      resEl.classList.add('show');
+      setTimeout(() => {
+        drawChart(sched, schedExtra);
+        resEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 80);
     }
     </script>
 <script id="ux-behavior">
