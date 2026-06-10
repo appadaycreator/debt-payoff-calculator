@@ -53,12 +53,24 @@
         .result-value { font-size: 36px; font-weight: 700; color: #6366F1; text-align: center; padding: 16px 0; }
         .badge { display: inline-block; background: #6366F120; color: #6366F1; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        .form-help { font-size: 12px; color: #6b7280; margin-top: 4px; line-height: 1.5; }
+        .tooltip-icon { display: inline-block; width: 20px; height: 20px; background: #6366f1; color: white; border-radius: 50%; text-align: center; line-height: 20px; font-size: 12px; font-weight: 700; cursor: pointer; margin-left: 4px; position: relative; vertical-align: middle; }
+        .tooltip-box { position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: #1f2937; color: white; padding: 8px 12px; border-radius: 6px; font-size: 12px; width: 200px; text-align: left; z-index: 1000; display: none; white-space: normal; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .tooltip-box::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: #1f2937; }
+        .tooltip-icon:hover .tooltip-box { display: block; }
+        .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 12px 16px; border-radius: 8px; font-size: 13px; z-index: 10000; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .export-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+        .export-btn { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; flex: 1; min-width: 100px; min-height: 40px; transition: background 0.2s; }
+        .export-btn:hover { background: #e5e7eb; }
         @media (max-width: 480px) {
             .site-header { padding: 24px 16px; }
             .site-header h1 { font-size: 20px; }
             .card { padding: 16px; }
             .btn { font-size: 15px; padding: 13px 20px; }
             .result-value { font-size: 28px; }
+            .tooltip-box { width: 160px; font-size: 11px; }
+            .export-btn { font-size: 11px; padding: 8px 10px; }
         }
         /* ── サービス固有CSS ── */
 
@@ -154,15 +166,22 @@
 </section>
 
 <h2 style="font-size:18px;font-weight:700;margin-bottom:16px;">💳 借金・ローン返済シミュレーター</h2>
-          <label>ローン残高（万円）</label>
-          <input type="number" id="balance" placeholder="例: 200" min="0" step="0.1">
-          <label style="margin-top:12px;">年利（%）</label>
-          <input type="number" id="rate" placeholder="例: 3.5" min="0" step="0.01">
-          <label style="margin-top:12px;">月々の返済額（円）</label>
-          <input type="number" id="monthly" placeholder="例: 50000" min="0">
+          <label>ローン残高（万円）<span class="tooltip-icon">?<span class="tooltip-box">現在のローン残高を万円単位で入力してください。複数のローンがある場合は合計額を入力します。</span></span></label>
+          <div class="form-help">例: 200万円の場合は「200」と入力</div>
+          <input type="number" id="balance" placeholder="例: 200" min="0" step="0.1" aria-describedby="balance-help">
+
+          <label style="margin-top:12px;">年利（%）<span class="tooltip-icon">?<span class="tooltip-box">ローンの年間利率をパーセント単位で入力してください。クレジットカード15～18%、カードローン12～18%、住宅ローン0.5～3%が目安です。</span></span></label>
+          <div class="form-help">例: 金利3.5%の場合は「3.5」と入力</div>
+          <input type="number" id="rate" placeholder="例: 3.5" min="0" step="0.01" aria-describedby="rate-help">
+
+          <label style="margin-top:12px;">月々の返済額（円）<span class="tooltip-icon">?<span class="tooltip-box">毎月支払う返済額を円単位で入力してください。これが月利息より小さい場合、元本が減らないため警告が表示されます。</span></span></label>
+          <div class="form-help">例: 5万円の場合は「50000」と入力</div>
+          <input type="number" id="monthly" placeholder="例: 50000" min="0" aria-describedby="monthly-help">
           <div id="monthlyWarning" style="display:none;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px;margin-top:8px;font-size:13px;color:#92400e;line-height:1.5;"></div>
-          <label style="margin-top:12px;">繰り上げ返済額（円/月）※任意</label>
-          <input type="number" id="extra" placeholder="例: 10000" min="0">
+
+          <label style="margin-top:12px;">繰り上げ返済額（円/月）※任意<span class="tooltip-icon">?<span class="tooltip-box">通常返済額に加えて毎月追加で支払える金額があれば入力してください。繰り上げ返済すると返済期間が短縮され、総利息が大幅に減ります。</span></span></label>
+          <div class="form-help">例: 追加で1万円支払える場合は「10000」と入力（任意）</div>
+          <input type="number" id="extra" placeholder="例: 10000" min="0" aria-describedby="extra-help">
           <button class="btn" style="margin-top:20px;" onclick="calculate()" aria-label="完済シミュレーション">完済シミュレーション</button>
           <div style="display:flex;gap:8px;margin-top:12px;">
             <button style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;flex:1;" onclick="loadSavedState()" aria-label="前回の計算を復元">💾 前回を復元</button>
@@ -179,6 +198,7 @@
       </ul>
     </div>
     <div class="result" id="result" style="margin-top:20px;display:none;">
+            <button id="pwa-install-btn" style="display:none;background:#6366f1;color:white;border:none;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-bottom:12px;min-height:40px;" onclick="installApp()">📱 アプリをインストール</button>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;" id="kpiCards"></div>
             <div style="display:flex;gap:8px;flex-direction:column;" id="extraInfo"></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;" id="chartsContainer">
@@ -186,6 +206,11 @@
               <div style="background:#f8fafc;border-radius:12px;padding:16px;"><canvas id="interestChart" style="max-height:300px;"></canvas></div>
             </div>
             <button style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:12px;width:100%;" onclick="toggleSchedule()" id="scheduleToggle">📋 返済スケジュール表を表示</button>
+            <div class="export-buttons">
+              <button class="export-btn" onclick="printResult()" title="計算結果を印刷">🖨️ 印刷</button>
+              <button class="export-btn" onclick="downloadCSV()" title="CSV形式でダウンロード">📥 CSVダウンロード</button>
+              <button class="export-btn" onclick="copyToClipboard()" title="結果をコピー">📋 コピー</button>
+            </div>
             <div id="scheduleContainer" style="display:none;margin-top:12px;">
               <table style="width:100%;border-collapse:collapse;font-size:13px;">
                 <thead style="background:#f3f4f6;">
@@ -561,6 +586,99 @@
         toggle.textContent = '📋 返済スケジュール表を表示';
       }
     }
+    function printResult() {
+      window.print();
+    }
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 2000);
+    }
+    function downloadCSV() {
+      const balance = document.getElementById('balance').value;
+      const rate = document.getElementById('rate').value;
+      const monthly = document.getElementById('monthly').value;
+      const extra = document.getElementById('extra').value;
+      const kpiCards = document.getElementById('kpiCards');
+      if (!kpiCards.innerHTML) { alert('先に計算を実行してください'); return; }
+      const textContent = kpiCards.innerText || kpiCards.textContent;
+      const vals = [balance, rate, monthly, extra];
+      const data = calcLogic(vals.map(v => parseFloat(v) || 0));
+      const schedule = data.schedule || [];
+      let csv = 'ローン返済シミュレーション結果\n';
+      csv += '入力値\n';
+      csv += `ローン残高（万円）,${balance}\n`;
+      csv += `年利（%）,${rate}\n`;
+      csv += `月々の返済額（円）,${monthly}\n`;
+      csv += `繰り上げ返済額（円/月）,${extra}\n`;
+      csv += '\n計算結果\n';
+      csv += `完済まで（年月）,${data.yrs}年${data.mos}ヶ月\n`;
+      csv += `総返済額（万円）,${(data.totalPaid/10000).toFixed(1)}\n`;
+      csv += `総利息（万円）,${(data.totalInt/10000).toFixed(1)}\n`;
+      csv += `利息割合（%）,${data.interestRate.toFixed(2)}\n`;
+      if (extra > 0) {
+        csv += `\n繰り上げ返済効果\n`;
+        csv += `期間短縮（ヶ月）,${data.months - data.months2}\n`;
+        csv += `利息節約（万円）,${(data.saved/10000).toFixed(1)}\n`;
+      }
+      csv += '\n返済スケジュール\n';
+      csv += '月数,残高（万円）,月利息（円）,月返済元本（円）\n';
+      schedule.forEach(row => {
+        csv += `${row.month},${(row.rem/10000).toFixed(1)},${row.interest},${row.principal}\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = `debtcalc_${new Date().getTime()}.csv`;
+      link.click();
+      showToast('CSVをダウンロードしました');
+    }
+    function copyToClipboard() {
+      const kpiCards = document.getElementById('kpiCards');
+      if (!kpiCards.innerHTML) { alert('先に計算を実行してください'); return; }
+      const balance = document.getElementById('balance').value;
+      const rate = document.getElementById('rate').value;
+      const monthly = document.getElementById('monthly').value;
+      const extra = document.getElementById('extra').value;
+      const vals = [balance, rate, monthly, extra];
+      const data = calcLogic(vals.map(v => parseFloat(v) || 0));
+      let text = '【借金・ローン返済シミュレーター結果】\n\n';
+      text += `入力値:\nローン残高: ${balance}万円\n年利: ${rate}%\n月々の返済額: ${monthly}円\n繰り上げ返済額: ${extra || '0'}円\n\n`;
+      text += `計算結果:\n`;
+      text += `完済まで: ${data.yrs}年${data.mos}ヶ月\n`;
+      text += `総返済額: ¥${(data.totalPaid/10000).toFixed(1)}万\n`;
+      text += `総利息: ¥${(data.totalInt/10000).toFixed(1)}万\n`;
+      text += `利息割合: ${data.interestRate.toFixed(2)}%\n`;
+      if (extra > 0) {
+        text += `\n繰り上げ返済効果:\n`;
+        text += `期間短縮: ${data.months - data.months2}ヶ月\n`;
+        text += `利息節約: ¥${(data.saved/10000).toFixed(1)}万\n`;
+      }
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('結果をコピーしました');
+      }).catch(() => {
+        alert('コピーに失敗しました');
+      });
+    }
+    let installPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      installPrompt = e;
+      const installBtn = document.getElementById('pwa-install-btn');
+      if (installBtn) installBtn.style.display = 'block';
+    });
+    function installApp() {
+      if (!installPrompt) return;
+      installPrompt.prompt();
+      installPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          showToast('アプリをインストールしました');
+        }
+        installPrompt = null;
+      });
+    }
     </script>
 <!-- AF: キャッシング・借入相談サービス -->
 <section style="background:#fff7ed;border-top:2px solid #fed7aa;padding:20px 16px;margin-top:8px;">
@@ -593,6 +711,42 @@
 <li><a href="/blog/investment-risk-management/" style="color:#4f46e5">投資のリスク管理入門</a></li>
 </ul>
 </div>
+<!-- r28-tool-expand-2 -->
+<section style="margin:2rem 0;padding:1.5rem;background:#f0fdf4;border-radius:.75rem;border:1px solid #bbf7d0">
+<h2 style="font-size:1.05rem;font-weight:700;color:#14532d;margin:0 0 .75rem">借金返済を加速させる具体的な戦略と行動計画</h2>
+<p style="font-size:.9rem;line-height:1.8;color:#374151">借金返済を加速させるためには「支出の見直し（コスト削減）」と「収入増加（副収入）」の2方向から同時にアプローチすることが最も効果的です。支出削減では「固定費の見直し」から始めるのが鉄則で、スマホプラン・サブスク・保険料の見直しは一度やれば毎月の節約効果が継続します。副収入については「返済が完了するまでの期間限定の集中モード」として副業（クラウドワークス・ランサーズ・フリマアプリ）に取り組み、得た収入を全額繰り上げ返済に充てる方法が最速です。心理的には「完済ビジュアライゼーション（完済後に何をするか・どんな生活になるかを具体的に想像する）」が返済継続のモチベーションを高めます。また借金返済中は「新たな消費者ローン・クレジットカードの新規発行を停止」することが返済進捗を守る重要なルールです。</p>
+<h3 style="font-size:.9rem;font-weight:700;color:#14532d;margin:1rem 0 .5rem">実践のコツ・ポイント</h3>
+<ul style="font-size:.87rem;line-height:2;color:#374151;padding-left:1.2rem">
+<li>固定費（スマホ・保険・サブスク）の見直しから始めると毎月の節約額が確定する</li>
+<li>副業収入は全額を繰り上げ返済に充てる「完済最優先モード」で取り組む</li>
+<li>クレジットカードは1枚のみ残し、他は全て解約して使いすぎを防ぐ</li>
+<li>繰り上げ返済は元金が減り「利息の利息」を防ぐため早期実行が効果的</li>
+<li>債務整理（任意整理・個人再生）は弁護士・司法書士への相談が必要</li>
+</ul>
+</section>
+<!-- r28-tool-expand-3 -->
+<section style="margin:2rem 0;padding:1.5rem;background:#fff7ed;border-radius:.75rem;border:1px solid #fed7aa">
+<h2 style="font-size:1.05rem;font-weight:700;color:#7c2d12;margin:0 0 .75rem">家計再建と借金完済後の資産形成への移行プラン</h2>
+<p style="font-size:.9rem;line-height:1.8;color:#374151">借金完済という目標を達成した後、「完済後の余剰資金をどう活用するか」の計画を持つことで、完済後の充実感と将来への安心感が生まれます。完済後の毎月の余剰資金は以下の優先順位で活用することが一般的に推奨されます。①緊急資金の積み立て（生活費3〜6ヶ月分）②職場の確定拠出年金・iDeCoへの上限拠出③NISAを活用した長期・分散投資④住宅購入・教育資金などの目的別貯蓄です。借金生活から抜け出した後に「ご褒美消費」で再びカードローンに頼るパターンを防ぐためには、自動積み立て設定で「使えないお金」を先に確保することが重要です。</p>
+</section>
+<!-- r28-tool-expand-4 -->
+<section style="margin:2rem 0;padding:1.5rem;background:#f8fafc;border-radius:.75rem;border:1px solid #e2e8f0">
+<h2 style="font-size:1.0rem;font-weight:700;color:#1e293b;margin:0 0 .75rem">あわせて使いたい関連ツール</h2>
+<p style="font-size:.88rem;line-height:1.7;color:#374151;margin:0 0 1rem">借金返済と並行して家計全体を最適化することが最速の完済につながります。返済可能な余剰資金の把握・副収入の活用・完済後の資産形成計画を以下のツールで一括管理してください。</p>
+<div style="display:grid;gap:.6rem">
+<a href="/household-budget-analyzer/" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#fff;border-radius:.5rem;border:1px solid #e2e8f0;text-decoration:none">
+<div><p style="font-size:.85rem;font-weight:700;color:#1e293b;margin:0">家計予算分析ツール</p><p style="font-size:.8rem;color:#6b7280;margin:0">返済原資となる月次余剰資金を把握</p></div></a>
+<a href="/side-hustle-income-tracker/" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#fff;border-radius:.5rem;border:1px solid #e2e8f0;text-decoration:none">
+<div><p style="font-size:.85rem;font-weight:700;color:#1e293b;margin:0">副業収入トラッカー</p><p style="font-size:.8rem;color:#6b7280;margin:0">返済加速のための副収入を管理</p></div></a>
+<a href="/asset-allocation-advisor/" style="display:flex;align-items:center;gap:.75rem;padding:.75rem;background:#fff;border-radius:.5rem;border:1px solid #e2e8f0;text-decoration:none">
+<div><p style="font-size:.85rem;font-weight:700;color:#1e293b;margin:0">資産配分アドバイザー</p><p style="font-size:.8rem;color:#6b7280;margin:0">完済後の資産形成プランを作成</p></div></a>
+</div>
+</section>
+<!-- r28-tool-expand-5 -->
+<section style="margin:2rem 0;padding:1.25rem 1.5rem;background:#f8fafc;border-radius:.75rem;border:1px solid #e2e8f0">
+<h2 style="font-size:.95rem;font-weight:700;color:#1e293b;margin:0 0 .5rem">ご利用にあたって</h2>
+<p style="font-size:.88rem;line-height:1.8;color:#374151;margin:0">本ツールの計算結果はあくまで参考値であり、実際の返済計画は金融機関の条件・金利変動・生活状況の変化によって調整が必要です。多重債務や返済が困難な状況にある方は、法律の専門家（弁護士・司法書士）や公的機関（日本貸金業協会・消費生活センター・法テラス）への無料相談を利用することを強くおすすめします。借金の返済は精神的にも大きな負担を伴います。一人で抱え込まず、信頼できる人や専門家に相談しながら着実に前進してください。本ツールが皆様の完済への道のりをサポートできれば幸いです。</p>
+</section>
 <!-- r17-mobile-ux -->
 <a href="#top" id="back-to-top" aria-label="ページトップへ戻る" style="display:none;position:fixed;bottom:24px;right:20px;background:#4f46e5;color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:1.4rem;line-height:48px;text-align:center;text-decoration:none;box-shadow:0 4px 12px rgba(79,70,229,.4);z-index:9000;cursor:pointer" title="ページトップへ">↑</a>
 <script>

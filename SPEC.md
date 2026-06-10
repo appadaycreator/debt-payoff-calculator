@@ -3,7 +3,7 @@
 ## 概要
 
 **サービス名**: Debt Payoff Calculator
-**バージョン**: 2.1.0
+**バージョン**: 2.2.0
 **更新日**: 2026-06-10
 **URL**: https://appadaycreator.com/debt-payoff-calculator/
 
@@ -105,6 +105,41 @@
   - オフライン時も入力・計算が動作
   - CSS・JS・Font を静的キャッシュで高速化
   - `sw.js` で Cache First + Network Fallback 戦略
+
+## v2.2.0 変更点（2026-06-10）
+
+### M8【満足】ツールチップ・入力ガイダンス充実
+- 各入力フィールドに説明テキスト・入力例を追加
+  - 「ローン残高（万円）」：万円単位の入力説明
+  - 「年利（%）」：業種別金利の目安（クレジットカード15～18%など）
+  - 「月々の返済額（円）」：月利息より小さい場合の警告説明
+  - 「繰り上げ返済額（円/月）」：繰り上げの効果説明
+- ? アイコン + ツールチップで詳細説明を提供
+- CSS で hover 時の tooltip 表示を実装
+- aria-describedby でアクセシビリティ対応
+
+### M10【満足】印刷・結果エクスポート機能
+- 計算結果表示後に 3 つのエクスポートボタンを追加
+  - 「🖨️ 印刷」：window.print() で印刷プレビューを開く
+  - 「📥 CSVダウンロード」：入力値・計算結果を CSV 形式でダウンロード
+  - 「📋 コピー」：結果をテキスト形式でクリップボードにコピー
+- printResult()：印刷機能
+- downloadCSV()：CSV エクスポート（月数・残高・利息・元本の返済スケジュール を含む）
+- copyToClipboard()：テキストコピー機能（navigator.clipboard API）
+- showToast()：成功通知トースト表示
+
+### M16【集客×再訪】PWA化（manifest・インストール促進）
+- beforeinstallprompt イベントハンドラの実装
+  - installApp() 関数でインストールプロンプト表示
+  - PWA インストール対応ブラウザで「📱 アプリをインストール」ボタン表示
+- manifest.json の充実
+  - name/short_name/description を日本語で設定
+  - theme_color を #6366F1 に統一
+  - icons：100x100、192x192 の SVG アイコン設定
+  - screenshots：PWA インストールプロンプト用スクリーンショット
+  - shortcuts：「計算を開始」ショートカット設定
+  - categories/orientation/display 設定完備
+- Service Worker：既に v2.1.0 で実装済み（Cache First + Network Fallback）
 
 ## テスト
 
