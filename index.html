@@ -17,6 +17,7 @@
     <meta name="twitter:card" content="summary">
     <link rel="canonical" href="https://appadaycreator.com/debt-payoff-calculator/">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💳</text></svg>">
+    <link rel="manifest" href="/debt-payoff-calculator/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
@@ -61,8 +62,10 @@
         .toast { position: fixed; bottom: 20px; right: 20px; background: #10b981; color: white; padding: 12px 16px; border-radius: 8px; font-size: 13px; z-index: 10000; animation: slideIn 0.3s ease-out; }
         @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         .export-buttons { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-        .export-btn { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 10px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; flex: 1; min-width: 100px; min-height: 40px; transition: background 0.2s; }
-        .export-btn:hover { background: #e5e7eb; }
+        .export-btn { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; padding: 12px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; flex: 1; min-width: 100px; min-height: 44px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        .export-btn:hover { background: #e5e7eb; border-color: #9ca3af; }
+        .export-btn:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }
+        .export-btn:active { transform: scale(0.98); }
         @media (max-width: 480px) {
             .site-header { padding: 24px 16px; }
             .site-header h1 { font-size: 20px; }
@@ -71,6 +74,18 @@
             .result-value { font-size: 28px; }
             .tooltip-box { width: 160px; font-size: 11px; }
             .export-btn { font-size: 11px; padding: 8px 10px; }
+        }
+        @media print {
+            body { background: white; color: black; }
+            .site-header { background: #6366f1; color: white; page-break-after: avoid; }
+            .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
+            nav, footer, .adsbygoogle, .site-header + div, .export-buttons, .tooltip-icon, .btn { display: none !important; }
+            .sr-only { display: none; }
+            .result { margin: 0; }
+            #kpiCards { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; page-break-inside: avoid; }
+            #chartsContainer { display: grid !important; grid-template-columns: 1fr 1fr; gap: 12px; page-break-inside: avoid; }
+            a { color: black; text-decoration: underline; }
+            .export-btn { display: none !important; }
         }
         /* ── サービス固有CSS ── */
 
@@ -553,8 +568,12 @@
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateThemeColor);
       CFG.inputs.forEach(id=>{ const el=document.getElementById(id); if(el) { el.addEventListener('keydown',e=>{ if(e.key==='Enter') calculate(); }); el.addEventListener('change', validateMonthly); el.addEventListener('input', validateMonthly); } });
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/debt-payoff-calculator/sw.js').catch(() => {});
+        navigator.serviceWorker.register('/debt-payoff-calculator/sw.js').then(()=>{
+          if(navigator.onLine) showToast('📱 オフライン対応。ネットなしでも利用可能です');
+        }).catch(() => {});
       }
+      window.addEventListener('online', ()=>{ showToast('🌐 オンラインに接続しました'); });
+      window.addEventListener('offline', ()=>{ showToast('⚠️ オフラインモード'); });
     });
     function calculate(){
       const vals=CFG.inputs.map(id=>parseFloat(document.getElementById(id)?.value)||0);
@@ -574,6 +593,21 @@
         tbody.appendChild(tr);
       });
       document.getElementById('scheduleToggle').textContent = '📋 返済スケジュール表を非表示';
+      showPWAPromptIfNeeded();
+    }
+    function showPWAPromptIfNeeded(){
+      const lastPrompt=localStorage.getItem('pwaPromptDate');
+      const now=new Date().getTime();
+      const sevenDays=7*24*60*60*1000;
+      if(!lastPrompt || now-parseInt(lastPrompt)>sevenDays){
+        if(installPrompt){
+          showToast('📱 このアプリをホーム画面に追加できます');
+          localStorage.setItem('pwaPromptDate', now.toString());
+        } else if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
+          showToast('📱 Safariのメニューから「ホーム画面に追加」を選択できます');
+          localStorage.setItem('pwaPromptDate', now.toString());
+        }
+      }
     }
     function toggleSchedule() {
       const container = document.getElementById('scheduleContainer');

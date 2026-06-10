@@ -139,6 +139,7 @@
   - screenshots：PWA インストールプロンプト用スクリーンショット
   - shortcuts：「計算を開始」ショートカット設定
   - categories/orientation/display 設定完備
+  - **HTMLに `<link rel="manifest" href="/debt-payoff-calculator/manifest.json">` を追加**
 - Service Worker：既に v2.1.0 で実装済み（Cache First + Network Fallback）
 
 ## テスト
@@ -150,6 +151,36 @@
 ## デプロイ
 
 GitHub Pages（mainブランチ push → 自動デプロイ）
+
+## デプロイ
+
+GitHub Pages（mainブランチ push → 自動デプロイ）
+
+## 2.3.0 アップデート（2026-06-10）
+
+### 新機能 / 改善
+
+#### 1. 印刷スタイル最適化（@media print）
+- ブラウザの印刷機能（Ctrl+P / Cmd+P）で、計算結果を見やすく印刷可能
+- 不要な要素（ナビゲーション・広告・SNSボタン）は自動非表示
+- KPI カード・グラフ・返済スケジュール表は最適レイアウトで印刷
+- ページ区切り設定でA4複数ページ対応
+
+#### 2. PWA インストール促進メッセージ
+- 計算完了後、「📱 このアプリをホーム画面に追加できます」とトースト通知
+- iOS/Safari利用者向けの追加ガイド表示
+- localStorage で7日間の非表示期間を管理（スパム防止）
+- Android/Chrome の beforeinstallprompt にネイティブ対応
+
+#### 3. オフライン対応の UX 明示
+- Service Worker 登録成功時に「📱 オフライン対応。ネットなしでも利用可能です」と通知
+- オンライン・オフライン状態の切り替え時に自動通知
+- ユーザーがオフライン機能を認識しやすく
+
+#### 4. エクスポートボタンの UX 改善
+- 印刷・CSV・コピー ボタンのホバー・フォーカス効果を強化
+- min-height: 44px（タッチ操作対応）を確保
+- ボタンの視覚的統一性を向上（border・background 統一）
 
 ## ライセンス
 
