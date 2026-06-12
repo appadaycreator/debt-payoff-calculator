@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Color チェック</title>
+</head>
+<body>
+    <h1>Theme Color メタタグ確認</h1>
+    <pre id="meta-tags"></pre>
+    <pre id="preference"></pre>
+    <script>
+        const metaTags = document.querySelectorAll('meta[name="theme-color"]');
+        const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        document.getElementById('meta-tags').textContent = 
+            `Found ${metaTags.length} theme-color meta tags:\n` +
+            Array.from(metaTags).map(tag => 
+                `  content="${tag.getAttribute('content')}" media="${tag.getAttribute('media')}"`
+            ).join('\n');
+        
+        document.getElementById('preference').textContent = 
+            `Current preference: ${isDark ? 'dark' : 'light'}`;
+    </script>
+</body>
+</html>
